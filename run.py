@@ -1,46 +1,54 @@
 from flask import Flask, request, session
+from twilio.rest import TwilioRestClient
+from Schedule import Schedule
+from Event import Event
 import twilio.twiml
 import os
 
 SECRET_KEY = os.environ.get('TWILIO_AUTH_TOKEN')
+account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+client = TwilioRestClient(account_sid, auth_token)
+TEST_NUMBER = os.environ.get('TWILIO_TEST_NUMBER')
+TWILIO_NUMBER = os.environ.get('TWILIO_NUMBER')
+
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-contacts = {
-}
+schedule = Schedule()
 
 
 @app.route("/", methods=['GET', 'POST'])
-def hello_monkey():
+def run_server():
 
-    """
-    # Example of session - to/from number identifier
-    counter = session.get('counter', 0)
-    counter += 1
-    session['counter'] = counter
+    # setup_sessions()
 
-    """
-
-    """
-    # Example of parsing text message for commands.
     body = request.values.get('Body', None)
     body = body.split()
-    """
 
-    if body[0] == 'ADD:':
-        resp = twilio.twiml.Response()
-        mssg = "correct answer buddy"
-        resp.message(mssg)
-    from_num = request.values.get('From', None)
-    if from_num in contacts:
-        mssg = "".join([contacts[from_num], ", thanks for texting!"])
-    else:
-        mssg = "Hello, Mobile Monkey"
-
-    # resp = twilio.twiml.Response()
-    # resp.message(mssg)
-
+    if body[0].lower() == 'add':
+        resp = add_event(body)
     return str(resp)
+
+
+def add_event(body):
+    event_title = "".join(body[1:])
+    event = Event(event_title)
+    schedule.add(event)
+
+    resp = twilio.twiml.Response()
+    mssg = "Event added! \n"
+    mssg += schedule.to_str()
+    resp.message(mssg)
+
+    return resp
+
+
+# Sets up schedule if none is found in session
+def setup_sessions():
+    schedule = session.get('Schedule', None)
+    if schedule is None:
+        session['Schedule'] = Schedule()
 
 if __name__ == "__main__":
     app.run(debug=True)
