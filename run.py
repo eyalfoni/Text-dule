@@ -21,24 +21,48 @@ schedule = Schedule()
 @app.route("/", methods=['GET', 'POST'])
 def run_server():
 
-    # setup_sessions()
-
     body = request.values.get('Body', None)
     body = body.split()
 
-    if body[0].lower() == 'add':
+    event = body[0].lower()
+    resp = None
+    if event == 'add':
         resp = add_event(body)
+    elif event == 'remove':
+        resp = remove_event(body)
+    elif event == 'show':
+        resp = show_all()
+
     return str(resp)
 
 
 def add_event(body):
-    event_title = "".join(body[1:])
+    event_title = " ".join(body[1:])
     event = Event(event_title)
     schedule.add(event)
 
     resp = twilio.twiml.Response()
-    mssg = "Event added! \n"
-    mssg += schedule.to_str()
+    mssg = "Event added. \n"
+    resp.message(mssg)
+
+    return resp
+
+
+def remove_event(body):
+    event_title = " ".join(body[1:])
+    event = Event(event_title)
+    schedule.remove(event)
+
+    resp = twilio.twiml.Response()
+    mssg = "Event removed. \n"
+    resp.message(mssg)
+
+    return resp
+
+
+def show_all():
+    resp = twilio.twiml.Response()
+    mssg = schedule.to_str()
     resp.message(mssg)
 
     return resp

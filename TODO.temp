@@ -1,0 +1,7 @@
+1. Add functionality for sessions
+    a. Serialize schedule class
+    b. Store data on other part of server and retrieve with cookie
+3. Add options for adding tasks
+    a. Are you sure you want to enter
+    b. What title / time / notes / etc.
+4. Add reminders based on time
