@@ -21,6 +21,7 @@ schedule = Schedule()
 @app.route("/", methods=['GET', 'POST'])
 def run_server():
 
+    print type(request.values)
     body = request.values.get('Body', None)
     body = body.split()
 
